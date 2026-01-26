@@ -719,12 +719,32 @@ function initMap() {
 
     // Network Layers
     const networkLayers = {};
+    // Custom renderer with high tolerance for mobile accessibility
+    const myRenderer = L.canvas({ padding: 0.5, tolerance: 20 });
+
+    // Helper to calculate length
+    function calculateLength(geometry) {
+        if (!geometry || geometry.type !== 'LineString') return 0;
+        let total = 0;
+        const coords = geometry.coordinates;
+        for (let i = 0; i < coords.length - 1; i++) {
+            // Leaflet expects [lat, lng], GeoJSON is [lng, lat]
+            const p1 = L.latLng(coords[i][1], coords[i][0]);
+            const p2 = L.latLng(coords[i+1][1], coords[i+1][0]);
+            total += map.distance(p1, p2);
+        }
+        return total;
+    }
+
     Object.keys(networkConfig).forEach(key => {
         const cfg = networkConfig[key];
         networkLayers[key] = L.geoJSON(municipalData[key], {
+            renderer: myRenderer, // Use custom renderer for better hit area
             style: () => ({ color: cfg.color, weight: getWeight(cfg.baseWeight), opacity: 0.9 }),
             onEachFeature: (f, l) => {
-                l.bindTooltip(`<b>${cfg.label}</b><br>${f.properties.name || 'N/A'}`, { sticky: true, className: 'custom-tooltip' });
+                const len = calculateLength(f.geometry);
+                const lenStr = len > 1000 ? (len / 1000).toFixed(2) + ' km' : Math.round(len) + ' m';
+                l.bindTooltip(`<b>${cfg.label}</b><br>${f.properties.name || 'N/A'}<br>Length: ${lenStr}`, { sticky: true, className: 'custom-tooltip' });
             }
         });
 
