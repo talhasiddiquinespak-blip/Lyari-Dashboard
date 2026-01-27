@@ -9,8 +9,97 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <!-- Grouped Layer Control CSS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-groupedlayercontrol/0.6.1/leaflet.groupedlayercontrol.min.css" />
+<!-- FONT -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
+    /* ===============================
+   DOWNLOADABLES – COMPACT PINNED PANEL
+   =============================== */
+
+#downloadables-panel {
+  position: absolute;
+  top: 120px;              /* adjust if needed */
+  left: 14px;
+  width: 260px;
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
+
+  background: linear-gradient(
+    180deg,
+    rgba(18,18,18,0.95),
+    rgba(10,10,10,0.98)
+  );
+
+  border-radius: 12px;
+  padding: 10px;
+  z-index: 5000;
+
+  box-shadow:
+    0 10px 25px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+/* Header */
+#downloadables-panel .dl-header {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  padding: 6px 10px 10px;
+}
+
+/* Individual items */
+#downloadables-panel .dl-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 10px 12px;
+  margin-bottom: 8px;
+
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.04),
+    rgba(255,255,255,0.015)
+  );
+
+  border-radius: 10px;
+  cursor: pointer;
+
+  font-size: 13px;
+  color: #eaeaea;
+
+  transition: all 0.25s ease;
+}
+
+/* Hover interaction */
+#downloadables-panel .dl-item:hover {
+  transform: translateX(4px);
+  background: linear-gradient(
+    180deg,
+    rgba(0,212,255,0.15),
+    rgba(0,212,255,0.05)
+  );
+}
+
+/* Download icon */
+#downloadables-panel .dl-icon {
+  color: #00d4ff;
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+/* Scrollbar (subtle) */
+#downloadables-panel::-webkit-scrollbar {
+  width: 6px;
+}
+#downloadables-panel::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
+}
+
     html, body {
     height: 100%;
     margin: 0;
@@ -43,16 +132,75 @@
     background: rgba(255, 255, 255, 0.95);
 }
 
-/* Custom Tooltip Styling */
-.custom-tooltip {
-    background: rgba(0, 0, 0, 0.9);
-    border: 1px solid rgba(255,255,255,0.2);
-    color: #fff;
-    font-size: 11px;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-weight: bold;
-}
+/* The Custom Tooltip Box */
+    .custom-tooltip {
+        background: rgba(10, 10, 10, 0.95);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 14px 18px;
+        min-width: 180px;
+        color: white;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+        border-radius: 6px;
+        position: relative;
+        font-family: inherit;
+    }
+
+    /* Tooltip Arrow (Left side) */
+    .custom-tooltip::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: -5px;
+        transform: translateY(-50%) rotate(45deg);
+        width: 10px;
+        height: 10px;
+        background: rgba(10, 10, 10, 0.95);
+        border-left: 1px solid rgba(255, 255, 255, 0.15);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .tooltip-header {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: rgba(255, 255, 255, 0.4);
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .tooltip-main {
+        font-size: 15px;
+        font-weight: 700;
+        display: block;
+        margin-bottom: 10px;
+        color: #fff;
+        }
+
+    .tooltip-bar {
+        height: 2px;
+        width: 40px;
+        background: #00d4ff;
+        margin-bottom: 10px;
+        border-radius: 2px;
+    }
+
+    .tooltip-data-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: rgba(255,255,255,0.8);
+    }
+
+    .tooltip-val {
+        font-weight: 700;
+        color: #00d4ff;
+    }
+
+    /* Helper for GSAP targeting */
+    .t-anim { opacity: 0; }
 
 /* Folder Style Headers */
 .leaflet-control-layers-group-name {
@@ -471,6 +619,43 @@
 </head>
 
 <body>
+<!-- LEFT SIDEBAR UI -->
+<!-- DOWNLOADABLES PANEL -->
+<div id="downloadables-panel">
+  <div class="dl-header">Downloadables</div>
+
+  <div class="dl-item" onclick="downloadFile('Primary_Road.kmz')">
+    <span>Primary Roads</span><span class="dl-icon">⬇</span>
+  </div>
+
+  <div class="dl-item" onclick="downloadFile('secondary_road.kmz')">
+    <span>Secondary Roads</span><span class="dl-icon">⬇</span>
+  </div>
+
+  <div class="dl-item" onclick="downloadFile('collector_Streets.kmz')">
+    <span>Collector Streets</span><span class="dl-icon">⬇</span>
+  </div>
+
+  <div class="dl-item" onclick="downloadFile('major_streets.kmz')">
+    <span>Major Streets</span><span class="dl-icon">⬇</span>
+  </div>
+
+  <div class="dl-item" onclick="downloadFile('minor_streets.kmz')">
+    <span>Minor Streets</span><span class="dl-icon">⬇</span>
+  </div>
+
+  <div class="dl-item" onclick="downloadFile('ward_boundaries.kmz')">
+    <span>Ward Boundaries</span><span class="dl-icon">⬇</span>
+  </div>
+
+  <div class="dl-item" onclick="downloadFile('ps_divisions.kmz')">
+    <span>PS Divisions</span><span class="dl-icon">⬇</span>
+  </div>
+
+  <div class="dl-item" onclick="downloadFile('phasings.kmz')">
+    <span>Phasing</span><span class="dl-icon">⬇</span>
+  </div>
+</div>
 
 <!-- Welcome Modal -->
 <div id="welcomeModal">
@@ -546,6 +731,65 @@ function login() {
     alert('Invalid credentials');
   }
 }
+function downloadFile(fileName) {
+  const link = document.createElement('a');
+  link.href = `downloads/${fileName}`;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+/* Generates the HTML string for the tooltip.
+         * Usage: layer.bindTooltip(getPremiumTooltip("Road", "Main St", "500"), {...})
+*/
+        function getPremiumTooltip(category, name, value) {
+            return `
+                <div class="custom-tooltip">
+                    <span class="t-anim tooltip-header">${category}</span>
+                    <span class="t-anim tooltip-main">${name}</span>
+                    <div class="t-anim tooltip-bar"></div>
+                    <div class="t-anim tooltip-data-row">
+                        <span>Distance:</span>
+                        <span class="tooltip-val">${value}m</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Animation engine for tooltips.
+         * Triggered automatically when map.on('tooltipopen') is set.
+         */
+        function animateTooltip(e) {
+            const container = e.tooltip._container.querySelector('.custom-tooltip');
+            if (!container) return; // Ignore if it's not our custom class
+
+            const items = container.querySelectorAll('.t-anim');
+            
+            // Set initial state
+            gsap.set(container, { opacity: 0, x: -15, scale: 0.9, transformOrigin: "left center" });
+            gsap.set(items, { opacity: 0, x: -10 });
+
+            // Animate container
+            gsap.to(container, { 
+                opacity: 1, 
+                x: 0, 
+                scale: 1, 
+                duration: 0.4, 
+                ease: "expo.out" 
+            });
+
+            // Stagger items in
+            gsap.to(items, { 
+                opacity: 1, 
+                x: 0, 
+                duration: 0.3, 
+                stagger: 0.05, 
+                delay: 0.15,
+                ease: "power2.out" 
+            });
+        }
 
 window.onload = function () {
   // do nothing on load
