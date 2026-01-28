@@ -13,93 +13,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-    /* ===============================
-   DOWNLOADABLES – COMPACT PINNED PANEL
-   =============================== */
-
-#downloadables-panel {
-  position: absolute;
-  top: 120px;              /* adjust if needed */
-  left: 14px;
-  width: 260px;
-  max-height: calc(100vh - 160px);
-  overflow-y: auto;
-
-  background: linear-gradient(
-    180deg,
-    rgba(18,18,18,0.95),
-    rgba(10,10,10,0.98)
-  );
-
-  border-radius: 12px;
-  padding: 10px;
-  z-index: 5000;
-
-  box-shadow:
-    0 10px 25px rgba(0,0,0,0.6),
-    inset 0 1px 0 rgba(255,255,255,0.04);
-}
-
-/* Header */
-#downloadables-panel .dl-header {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.55);
-  padding: 6px 10px 10px;
-}
-
-/* Individual items */
-#downloadables-panel .dl-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  padding: 10px 12px;
-  margin-bottom: 8px;
-
-  background: linear-gradient(
-    180deg,
-    rgba(255,255,255,0.04),
-    rgba(255,255,255,0.015)
-  );
-
-  border-radius: 10px;
-  cursor: pointer;
-
-  font-size: 13px;
-  color: #eaeaea;
-
-  transition: all 0.25s ease;
-}
-
-/* Hover interaction */
-#downloadables-panel .dl-item:hover {
-  transform: translateX(4px);
-  background: linear-gradient(
-    180deg,
-    rgba(0,212,255,0.15),
-    rgba(0,212,255,0.05)
-  );
-}
-
-/* Download icon */
-#downloadables-panel .dl-icon {
-  color: #00d4ff;
-  font-size: 14px;
-  opacity: 0.85;
-}
-
-/* Scrollbar (subtle) */
-#downloadables-panel::-webkit-scrollbar {
-  width: 6px;
-}
-#downloadables-panel::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.15);
-  border-radius: 10px;
-}
-
     html, body {
     height: 100%;
     margin: 0;
@@ -111,7 +24,11 @@
 #map {
     width: 100%;
     height: 100%;
-    background: #000; /* fallback */
+    background: #000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
 }
 
 /* Leaflet panes – force black fade */
@@ -130,6 +47,94 @@
     border-radius: 8px;
     border: none;
     background: rgba(255, 255, 255, 0.95);
+}
+
+/* Custom Tooltip Styling */
+.custom-tooltip {
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+    /* ===============================
+   DOWNLOADABLES – COMPACT PINNED PANEL
+   =============================== */
+.download-sidebar {
+    position: absolute;
+    top: 120px;
+    left: 10px;
+    width: 260px;
+    background: linear-gradient(180deg, #0b0b0b, #111);
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    overflow: hidden;
+    z-index: 999;
+    transition: width 0.35s ease;
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+.download-sidebar.collapsed {
+    width: 48px;
+}
+
+.download-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.download-title {
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #e5e7eb;
+    white-space: nowrap;
+}
+
+.download-arrow {
+    transition: transform 0.35s ease;
+    color: #38bdf8;
+    font-size: 18px;
+}
+
+.download-sidebar.collapsed .download-arrow {
+    transform: rotate(180deg);
+}
+
+.download-content {
+    display: flex;
+    flex-direction: column;
+    padding: 6px 10px 12px;
+}
+
+.download-content a {
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-top: 6px;
+    font-size: 13px;
+    text-decoration: none;
+    color: #d1d5db;
+    background: rgba(255,255,255,0.03);
+    transition: all 0.25s ease;
+}
+
+.download-content a:hover {
+    background: rgba(56,189,248,0.15);
+    color: #38bdf8;
+    transform: translateX(4px);
+}
+
+.download-sidebar.collapsed .download-title,
+.download-sidebar.collapsed .download-content {
+    display: none;
 }
 
 /* The Custom Tooltip Box */
@@ -620,42 +625,27 @@
 
 <body>
 <!-- LEFT SIDEBAR UI -->
-<!-- DOWNLOADABLES PANEL -->
-<div id="downloadables-panel">
-  <div class="dl-header">Downloadables</div>
+<!-- DOWNLOADABLES SIDEBAR -->
+<div id="downloadSidebar" class="download-sidebar collapsed">
 
-  <div class="dl-item" onclick="downloadFile('Primary_Road.kmz')">
-    <span>Primary Roads</span><span class="dl-icon">⬇</span>
-  </div>
+    <div class="download-header" onclick="toggleDownloads()">
+        <span class="download-title">Downloadables</span>
+        <span class="download-arrow">❯</span>
+    </div>
 
-  <div class="dl-item" onclick="downloadFile('secondary_road.kmz')">
-    <span>Secondary Roads</span><span class="dl-icon">⬇</span>
-  </div>
+    <div class="download-content">
+        <a href="./downloads/Primary_Road.kmz" download>Primary Roads</a>
+        <a href="./downloads/secondary_road.kmz" download>Secondary Roads</a>
+        <a href="./downloads/collector_Streets.kmz" download>Collector Streets</a>
+        <a href="./downloads/major_streets.kmz" download>Major Streets</a>
+        <a href="./downloads/minor_streets.kmz" download>Minor Streets</a>
+        <a href="./downloads/ward_boundaries.kmz" download>Ward Boundaries</a>
+        <a href="./downloads/ps_divisions.kmz" download>PS Divisions</a>
+        <a href="./downloads/phasings.kmz" download>Phasing</a>
+    </div>
 
-  <div class="dl-item" onclick="downloadFile('collector_Streets.kmz')">
-    <span>Collector Streets</span><span class="dl-icon">⬇</span>
-  </div>
-
-  <div class="dl-item" onclick="downloadFile('major_streets.kmz')">
-    <span>Major Streets</span><span class="dl-icon">⬇</span>
-  </div>
-
-  <div class="dl-item" onclick="downloadFile('minor_streets.kmz')">
-    <span>Minor Streets</span><span class="dl-icon">⬇</span>
-  </div>
-
-  <div class="dl-item" onclick="downloadFile('ward_boundaries.kmz')">
-    <span>Ward Boundaries</span><span class="dl-icon">⬇</span>
-  </div>
-
-  <div class="dl-item" onclick="downloadFile('ps_divisions.kmz')">
-    <span>PS Divisions</span><span class="dl-icon">⬇</span>
-  </div>
-
-  <div class="dl-item" onclick="downloadFile('phasings.kmz')">
-    <span>Phasing</span><span class="dl-icon">⬇</span>
-  </div>
 </div>
+
 
 <!-- Welcome Modal -->
 <div id="welcomeModal">
@@ -673,7 +663,7 @@
         <button onclick="closeWelcome()">Enter Dashboard</button>
     </div>
 </div>
-
+<!-- LOGIN -->
 <div id="map"></div>
 <div id="login">
   <div class="login-container">
@@ -725,20 +715,21 @@ function login() {
 
     setTimeout(() => {
       initMap();
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('welcomeModal').style.display = 'flex';
     }, 500);
 
   } else {
-    alert('Invalid credentials');
+    alert('Invalid credentials. Use username: admin, password: 1234');
   }
 }
-function downloadFile(fileName) {
-  const link = document.createElement('a');
-  link.href = `downloads/${fileName}`;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+
+function toggleDownloads() {
+    document.getElementById('downloadSidebar')
+        .classList.toggle('collapsed');
 }
+
+
 
 /* Generates the HTML string for the tooltip.
          * Usage: layer.bindTooltip(getPremiumTooltip("Road", "Main St", "500"), {...})
@@ -792,10 +783,7 @@ function downloadFile(fileName) {
         }
 
 window.onload = function () {
-  // do nothing on load
-  // Show welcome modal after login
-    document.getElementById('welcomeModal').style.display = 'flex';
-
+  // Page loaded - login screen is shown by default
 };
 function initMap() {
 
@@ -1320,10 +1308,6 @@ function initMap() {
 
     const bounds = wardLayer.getBounds();
     if (bounds.isValid()) map.fitBounds(bounds, { padding: [30, 30] });
-    setTimeout(() => {
-        document.getElementById('loader').style.display = 'none';
-    }, 600);
-document.getElementById('loader').style.display = 'none';
 
    
 };
@@ -1334,7 +1318,6 @@ function closeWelcome() {
 </script>
 </body>
 </html>
-
 
 
 
