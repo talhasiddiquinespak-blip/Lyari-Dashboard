@@ -1375,6 +1375,39 @@ function initMap() {
     } else {
         fallbackToIP();
     }
+
+    // Add "Locate Me" Button Control
+    const locateControl = L.control({ position: 'bottomright' });
+    locateControl.onAdd = function() {
+        const btn = L.DomUtil.create('button', 'locate-btn');
+        btn.innerHTML = '📍';
+        btn.style.backgroundColor = '#fff';
+        btn.style.border = '2px solid rgba(0,0,0,0.2)';
+        btn.style.backgroundClip = 'padding-box';
+        btn.style.borderRadius = '4px';
+        btn.style.width = '34px';
+        btn.style.height = '34px';
+        btn.style.cursor = 'pointer';
+        btn.style.fontSize = '18px';
+        btn.style.lineHeight = '30px';
+        btn.style.textAlign = 'center';
+        btn.style.boxShadow = '0 1px 5px rgba(0,0,0,0.65)';
+        btn.title = "Go to my location";
+        
+        btn.onclick = function() {
+            if (userMarker) {
+                map.setView(userMarker.getLatLng(), 16);
+            } else {
+                alert("Location not found yet.");
+            }
+        };
+
+        // Prevent map click when clicking the button
+        L.DomEvent.disableClickPropagation(btn);
+
+        return btn;
+    };
+    locateControl.addTo(map);
 };
 function closeWelcome() {
     document.getElementById('welcomeModal').style.display = 'none';
