@@ -1309,7 +1309,72 @@ function initMap() {
     const bounds = wardLayer.getBounds();
     if (bounds.isValid()) map.fitBounds(bounds, { padding: [30, 30] });
 
-   
+    /* =========================================================================
+       6. LIVE LOCATION TRACKING (HTML5 Geolocation + IP Fallback)
+       ========================================================================= */
+    let userMarker, userCircle;
+    
+    // Custom icon for user location
+    const userIcon = L.divIcon({
+        className: 'custom-user-icon',
+        html: '<div style="background-color: #2196F3; width: 14px; height: 14px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5);"></div>',
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+    });
+
+    function updateUserLocation(lat, lng, accuracy, source) {
+        if (!userMarker) {
+            userMarker = L.marker([lat, lng], { icon: userIcon }).addTo(map)
+                .bindTooltip(`<b>Your Location</b><br>Source: ${source}<br>Accuracy: ~${Math.round(accuracy)}m`, { sticky: true, className: 'custom-tooltip' });
+            userCircle = L.circle([lat, lng], { radius: accuracy, color: '#2196F3', fillColor: '#2196F3', fillOpacity: 0.15, weight: 1 }).addTo(map);
+        } else {
+            userMarker.setLatLng([lat, lng]);
+            userMarker.getTooltip().setContent(`<b>Your Location</b><br>Source: ${source}<br>Accuracy: ~${Math.round(accuracy)}m`);
+            userCircle.setLatLng([lat, lng]);
+            userCircle.setRadius(accuracy);
+        }
+    }
+
+    function fallbackToIP() {
+        console.log("HTML5 Geolocation failed/denied. Falling back to IP Geolocation.");
+        fetch('https://ipinfo.io/json')
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.loc) {
+                    const coords = data.loc.split(',');
+                    const lat = parseFloat(coords[0]);
+                    const lng = parseFloat(coords[1]);
+                    updateUserLocation(lat, lng, 5000, "IP Geolocation (Approximate)");
+                }
+            })
+            .catch(err => console.error("IP Geolocation failed:", err));
+    }
+
+    if ("geolocation" in navigator) {
+        const geoOptions = {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        };
+
+        navigator.geolocation.watchPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                const accuracy = position.coords.accuracy;
+                updateUserLocation(lat, lng, accuracy, "GPS/Wi-Fi (High Accuracy)");
+            },
+            (error) => {
+                console.warn("Geolocation error:", error.message);
+                if (!userMarker) {
+                    fallbackToIP();
+                }
+            },
+            geoOptions
+        );
+    } else {
+        fallbackToIP();
+    }
 };
 function closeWelcome() {
     document.getElementById('welcomeModal').style.display = 'none';
